@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"><body>
+<header class="topbar" th:fragment="topbar(active)">
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+    <div class="topbar-inner">
+        <a class="brand" th:href="@{/dashboard}" aria-label="Meu Controle Financeiro, início"><span class="brand-mark" aria-hidden="true">R$</span> Meu Controle Financeiro</a>
+        <nav class="main-nav" aria-label="Navegação principal">
+            <a th:href="@{/dashboard}" th:classappend="${active == 'dashboard'} ? 'active' : ''" th:attr="aria-current=${active == 'dashboard'} ? 'page' : null">Visão geral</a>
+            <a th:href="@{/despesas}" th:classappend="${active == 'despesas'} ? 'active' : ''" th:attr="aria-current=${active == 'despesas'} ? 'page' : null">Despesas</a>
+            <a th:href="@{/receitas}" th:classappend="${active == 'receitas'} ? 'active' : ''" th:attr="aria-current=${active == 'receitas'} ? 'page' : null">Receitas</a>
+            <a th:href="@{/planejamento}" th:classappend="${active == 'planejamento'} ? 'active' : ''" th:attr="aria-current=${active == 'planejamento'} ? 'page' : null">Planejamento</a>
+            <a th:href="@{/metas}" th:classappend="${active == 'metas'} ? 'active' : ''" th:attr="aria-current=${active == 'metas'} ? 'page' : null">Metas</a>
+            <a th:href="@{/ajuda}" th:classappend="${active == 'ajuda'} ? 'active' : ''" th:attr="aria-current=${active == 'ajuda'} ? 'page' : null">Como usar</a>
+        </nav>
+    </div>
+</header>
+<div th:fragment="notice" class="notice-area" aria-live="polite">
+    <p class="feedback success" th:if="${sucesso}" role="status" th:text="${sucesso}"></p>
+    <p class="feedback error" th:if="${erro}" role="alert" th:text="${erro}"></p>
+</div>
+</body></html>
+

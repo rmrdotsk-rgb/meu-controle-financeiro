@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Planejamento | Meu Controle Financeiro</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<body>
+<div th:replace="~{fragments :: topbar('planejamento')}"></div>
+<main class="page-wrap" id="conteudo" tabindex="-1">
+    <div class="page-heading"><div><p class="eyebrow">Limites mensais</p><h1>Planejamento</h1><p class="intro">Defina quanto pretende gastar por categoria e compare com as despesas registradas.</p></div>
+        <form class="period-picker" method="get" th:action="@{/planejamento}"><label for="mes-consulta">Mês</label><input type="month" id="mes-consulta" name="mes" th:value="${periodo}" required><button class="button button-secondary" type="submit">Ver mês</button></form>
+    </div>
+    <div th:replace="~{fragments :: notice}"></div>
+    <section class="panel"><div class="section-heading"><h2>Definir limite para o mês</h2></div>
+        <p class="muted small">Se a categoria já tiver um limite neste mês, o novo valor substitui o anterior.</p>
+        <form method="post" th:action="@{/orcamentos}" class="filters budget-form">
+            <div class="field-group"><label for="mes">Mês</label><input id="mes" type="month" name="mes" th:value="${periodo}" required></div>
+            <div class="field-group"><label for="categoria">Categoria</label><select id="categoria" name="categoria" required><option value="">Escolha</option><option value="Alimentação">Alimentação</option><option value="Educação">Educação</option><option value="Transporte">Transporte</option><option value="Casa">Casa</option><option value="Saúde">Saúde</option><option value="Lazer">Lazer</option><option value="Outros">Outros</option></select></div>
+            <div class="field-group"><label for="limite">Limite (R$)</label><input id="limite" type="number" name="limite" min="0.01" max="9999999999.99" inputmode="decimal" step="0.01" placeholder="0,00" required></div>
+            <button class="button button-primary" type="submit">Salvar limite</button>
+        </form>
+    </section>
+    <section class="panel"><div class="section-heading"><h2>Limites cadastrados</h2><span class="muted small" th:text="${#lists.size(orcamentos) + ' categoria(s)'}"></span></div>
+        <div class="empty-state" th:if="${#lists.isEmpty(orcamentos)}"><h3>Nenhum limite definido neste mês</h3><p>Escolha uma categoria e um valor acima. Os gastos serão calculados usando suas despesas salvas.</p></div>
+        <div class="budget-list" th:unless="${#lists.isEmpty(orcamentos)}">
+            <div class="budget-item" th:each="item : ${orcamentos}" th:classappend="${item.gasto.compareTo(item.orcamento.limite) > 0} ? 'budget-exceeded' : ''">
+                <div class="section-heading"><div><h3 th:text="${item.orcamento.categoria}"></h3><span class="pill" th:text="${item.situacao}"></span></div>
+                    <form method="post" th:action="@{/orcamentos/{id}/excluir(id=${item.orcamento.id})}" onsubmit="return confirm('Remover este limite mensal?')"><button class="action action-delete" type="submit">Remover</button></form></div>
+                <div class="bar-label"><strong th:text="${'Gasto: R$ ' + #numbers.formatDecimal(item.gasto, 1, 'POINT', 2, 'COMMA')}"></strong><span th:text="${'Limite: R$ ' + #numbers.formatDecimal(item.orcamento.limite, 1, 'POINT', 2, 'COMMA')}"></span></div>
+                <progress th:value="${item.percentual}" max="100" th:attr="aria-label=${'Uso do limite de ' + item.orcamento.categoria}"></progress>
+                <p class="muted small" th:text="${'Disponível dentro do limite: R$ ' + #numbers.formatDecimal(item.restante, 1, 'POINT', 2, 'COMMA')}"></p>
+                <p class="budget-warning small" th:if="${item.gasto.compareTo(item.orcamento.limite) > 0}" th:text="${'Seu gasto ultrapassou o limite em R$ ' + #numbers.formatDecimal(item.gasto.subtract(item.orcamento.limite), 1, 'POINT', 2, 'COMMA') + '.'}"></p>
+            </div>
+        </div>
+    </section>
+    <p class="footnote">Os limites são avisos visuais. Eles não impedem gastos, não realizam pagamentos e não movimentam dinheiro.</p>
+</main>
+</body></html>
+

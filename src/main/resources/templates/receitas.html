@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Receitas | Meu Controle Financeiro</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<body>
+<div th:replace="~{fragments :: topbar('receitas')}"></div>
+<main class="page-wrap" id="conteudo" tabindex="-1">
+    <div class="page-heading"><div><p class="eyebrow">Entradas de dinheiro</p><h1>Minhas receitas</h1><p class="intro">Registre salário, trabalhos eventuais e outras entradas recebidas.</p></div><a th:href="@{/receitas/nova}" class="button button-primary">+ Nova receita</a></div>
+    <div th:replace="~{fragments :: notice}"></div>
+    <section class="summary" aria-label="Resumo das receitas">
+        <div class="summary-item"><span>Total recebido na consulta</span><strong th:text="${'R$ ' + #numbers.formatDecimal(total, 1, 'POINT', 2, 'COMMA')}"></strong></div>
+        <div class="summary-item"><span>Receitas encontradas</span><strong th:text="${quantidade}"></strong></div>
+    </section>
+    <section class="panel"><div class="section-heading"><h2>Pesquisar receitas</h2><span class="muted small">Consulte por descrição, tipo e período</span></div>
+        <form class="filters" th:action="@{/receitas}" method="get">
+            <div class="field-group"><label for="busca">Descrição</label><input id="busca" name="busca" type="search" maxlength="120" th:value="${busca}" placeholder="Ex.: trabalho eventual"></div>
+            <div class="field-group"><label for="categoria">Tipo de receita</label><select id="categoria" name="categoria"><option value="">Todos</option><option value="Salário" th:selected="${categoriaSelecionada == 'Salário'}">Salário</option><option value="Freelance" th:selected="${categoriaSelecionada == 'Freelance'}">Freelance</option><option value="Vendas" th:selected="${categoriaSelecionada == 'Vendas'}">Vendas</option><option value="Outros" th:selected="${categoriaSelecionada == 'Outros'}">Outros</option></select></div>
+            <div class="field-group"><label for="inicio">De</label><input id="inicio" name="inicio" type="date" th:value="${inicio}"></div>
+            <div class="field-group"><label for="fim">Até</label><input id="fim" name="fim" type="date" th:value="${fim}"></div>
+            <div class="filter-actions"><button class="button button-primary" type="submit">Filtrar</button><a class="button button-secondary" th:href="@{/receitas}">Limpar</a></div>
+        </form>
+        <p th:if="${filtroErro}" class="feedback error" role="alert" th:text="${filtroErro}"></p>
+    </section>
+    <section class="panel list-section"><div class="section-heading"><h2>Histórico de receitas</h2><span class="muted small" th:if="${quantidade > 0}" th:text="${quantidade + ' lançamento(s)'}"></span></div>
+        <div class="empty-state" th:if="${#lists.isEmpty(receitas)}"><h3 th:text="${filtrosAtivos} ? 'Nenhum resultado para os filtros' : 'Ainda não há receitas cadastradas.'"></h3><p th:text="${filtrosAtivos} ? 'Altere os filtros ou limpe a pesquisa.' : 'Adicione um salário ou outra entrada recebida.'"></p><a class="button button-secondary" th:href="@{/receitas/nova}" th:unless="${filtrosAtivos}">Adicionar receita</a></div>
+        <div class="table-wrap" th:unless="${#lists.isEmpty(receitas)}"><table><caption class="sr-only">Receitas encontradas na consulta</caption><thead><tr><th scope="col">Descrição</th><th scope="col">Tipo</th><th scope="col">Data</th><th scope="col" class="align-right">Valor</th><th scope="col" class="actions-heading">Ações</th></tr></thead><tbody>
+        <tr th:each="receita : ${receitas}"><td data-label="Descrição"><strong th:text="${receita.descricao}"></strong></td><td data-label="Tipo"><span class="tag" th:text="${receita.categoria}"></span></td><td data-label="Data" th:text="${#temporals.format(receita.data, 'dd/MM/yyyy')}"></td><td data-label="Valor" class="amount align-right" th:text="${'R$ ' + #numbers.formatDecimal(receita.valor, 1, 'POINT', 2, 'COMMA')}"></td>
+        <td data-label="Ações"><div class="row-actions"><a class="action" th:href="@{/receitas/{id}/editar(id=${receita.id})}" th:attr="aria-label=${'Editar receita: ' + receita.descricao}">Editar</a><form th:action="@{/receitas/{id}/excluir(id=${receita.id})}" method="post" onsubmit="return confirm('Deseja excluir esta receita?')"><button type="submit" class="action action-delete" th:attr="aria-label=${'Excluir receita: ' + receita.descricao}">Excluir</button></form></div></td></tr>
+        </tbody></table></div>
+    </section>
+</main></body></html>
+

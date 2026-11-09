@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Despesas | Meu Controle Financeiro</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<body>
+<div th:replace="~{fragments :: topbar('despesas')}"></div>
+<main class="page-wrap" id="conteudo" tabindex="-1">
+    <div class="page-heading"><div><p class="eyebrow">Lançamentos</p><h1>Minhas despesas</h1><p class="intro">Registre seus gastos e encontre lançamentos antigos com facilidade.</p></div>
+    <a class="button button-primary" th:href="@{/despesas/nova}">+ Nova despesa</a></div>
+    <div th:replace="~{fragments :: notice}"></div>
+    <section class="summary" aria-label="Resumo das despesas">
+        <div class="summary-item"><span>Total gasto na consulta</span><strong th:text="${'R$ ' + #numbers.formatDecimal(total, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</strong></div>
+        <div class="summary-item"><span>Despesas encontradas</span><strong th:text="${quantidade}">0</strong></div>
+    </section>
+    <section class="panel"><div class="section-heading"><h2>Pesquisar despesas</h2><span class="muted small">Filtros aplicados aos registros salvos</span></div>
+        <form class="filters" th:action="@{/despesas}" method="get">
+            <div class="field-group"><label for="busca">Descrição</label><input id="busca" name="busca" type="search" maxlength="120" th:value="${busca}" placeholder="Ex.: mercado"></div>
+            <div class="field-group"><label for="categoria">Categoria</label><select id="categoria" name="categoria"><option value="">Todas</option>
+                <option value="Alimentação" th:selected="${categoriaSelecionada == 'Alimentação'}">Alimentação</option>
+<option value="Educação" th:selected="${categoriaSelecionada == 'Educação'}">Educação</option>
+<option value="Transporte" th:selected="${categoriaSelecionada == 'Transporte'}">Transporte</option>
+<option value="Casa" th:selected="${categoriaSelecionada == 'Casa'}">Casa</option>
+<option value="Saúde" th:selected="${categoriaSelecionada == 'Saúde'}">Saúde</option>
+<option value="Lazer" th:selected="${categoriaSelecionada == 'Lazer'}">Lazer</option>
+<option value="Outros" th:selected="${categoriaSelecionada == 'Outros'}">Outros</option>
+            </select></div>
+            <div class="field-group"><label for="inicio">De</label><input id="inicio" name="inicio" type="date" th:value="${inicio}"></div>
+            <div class="field-group"><label for="fim">Até</label><input id="fim" name="fim" type="date" th:value="${fim}"></div>
+            <div class="filter-actions"><button class="button button-primary" type="submit">Filtrar</button><a class="button button-secondary" th:href="@{/despesas}">Limpar</a></div>
+        </form>
+        <p th:if="${filtroErro}" class="feedback error" role="alert" th:text="${filtroErro}"></p>
+    </section>
+    <section class="panel list-section"><div class="section-heading"><h2>Histórico de despesas</h2><span class="muted small" th:if="${quantidade > 0}" th:text="${quantidade + ' lançamento(s)'}"></span></div>
+        <div class="empty-state" th:if="${#lists.isEmpty(despesas)}">
+            <h3 th:text="${filtrosAtivos} ? 'Nenhum resultado para os filtros' : 'Ainda não há despesas cadastradas.'"></h3>
+            <p th:text="${filtrosAtivos} ? 'Altere os filtros ou limpe a pesquisa.' : 'Comece anotando uma despesa, como mercado ou transporte.'"></p>
+            <a class="button button-secondary" th:href="@{/despesas/nova}" th:unless="${filtrosAtivos}">Adicionar despesa</a>
+        </div>
+        <div class="table-wrap" th:unless="${#lists.isEmpty(despesas)}"><table><caption class="sr-only">Despesas encontradas na consulta</caption><thead><tr><th scope="col">Descrição</th><th scope="col">Categoria</th><th scope="col">Data</th><th scope="col" class="align-right">Valor</th><th scope="col" class="actions-heading">Ações</th></tr></thead>
+        <tbody><tr th:each="despesa : ${despesas}"><td data-label="Descrição"><strong th:text="${despesa.descricao}"></strong></td>
+        <td data-label="Categoria"><span class="tag" th:text="${despesa.categoria}"></span></td>
+        <td data-label="Data" th:text="${#temporals.format(despesa.data, 'dd/MM/yyyy')}"></td>
+        <td data-label="Valor" class="amount align-right" th:text="${'R$ ' + #numbers.formatDecimal(despesa.valor, 1, 'POINT', 2, 'COMMA')}"></td>
+        <td data-label="Ações"><div class="row-actions"><a class="action" th:href="@{/despesas/{id}/editar(id=${despesa.id})}" th:attr="aria-label=${'Editar despesa: ' + despesa.descricao}">Editar</a>
+        <form th:action="@{/despesas/{id}/excluir(id=${despesa.id})}" method="post" onsubmit="return confirm('Deseja excluir esta despesa?')"><button type="submit" class="action action-delete" th:attr="aria-label=${'Excluir despesa: ' + despesa.descricao}">Excluir</button></form></div></td>
+        </tr></tbody></table></div>
+    </section>
+</main></body></html>
+

@@ -1,0 +1,11 @@
+target/
+*.mv.db
+*.trace.db
+.env*
+!.env.example
+.idea/
+.vscode/
+*.iml
+.DS_Store
+*.log
+hs_err_pid*

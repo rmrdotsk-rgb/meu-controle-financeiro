@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Não foi possível abrir a página | Meu Controle Financeiro</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<body>
+<div th:replace="~{fragments :: topbar('')}"></div>
+<main class="form-page" id="conteudo" tabindex="-1">
+    <p class="eyebrow" th:text="${'Erro ' + status}">Não foi possível continuar</p>
+    <h1 th:text="${status == 404} ? 'Página não encontrada' : 'Não foi possível concluir'">Não foi possível concluir</h1>
+    <section class="panel">
+        <p th:if="${status == 404}">O endereço pode ter mudado ou o registro já foi removido.</p>
+        <p th:if="${status == 400}">Confira os dados e o período informado. Use um endereço válido ou volte para a visão geral.</p>
+        <p th:if="${status == 403}">A sessão deste formulário pode ter expirado. Abra a página novamente e tente salvar mais uma vez.</p>
+        <p th:if="${status != 404 and status != 400 and status != 403}">Tente novamente em instantes. Se o problema continuar, consulte a pessoa responsável pela aplicação.</p>
+        <a class="button button-primary" th:href="@{/dashboard}">Voltar à visão geral</a>
+    </section>
+</main>
+</body></html>
+
