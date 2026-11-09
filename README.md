@@ -115,3 +115,33 @@ Os testes usam bancos temporários separados da base pessoal. Há cenários para
 - `docs`: documento acadêmico em PDF/Markdown, requisitos, roteiro e migração.
 
 Não inclua `target/`, bancos `.mv.db`, backups, logs, credenciais ou caches nos commits. As quatro histórias obrigatórias continuam sendo cadastrar, consultar, editar e excluir despesas. O documento identifica Emerson Saturno e acrescenta cadastro de conta, autenticação e isolamento às histórias anteriores. Revise e imprima `docs/DOCUMENTO_ACADEMICO.pdf` para a apresentação.
+
+## Colaboração no VS Code
+
+Cada colaborador precisa de Git, JDK 21, VS Code e acesso autorizado ao repositório privado. O acesso deve ser concedido pelo proprietário; clonar o projeto não altera permissões. Após a integração da versão aprovada na `main`, comece com:
+
+```powershell
+git clone https://github.com/rmrdotsk-rgb/meu-controle-financeiro.git
+cd meu-controle-financeiro
+code .
+```
+
+No terminal do VS Code, execute `java -version`, `.\mvnw.cmd clean verify` e `.\Iniciar.cmd`. Se o Java não for reconhecido, siga a configuração de `JAVA_HOME` acima. Acesse `http://127.0.0.1:8080/login` e crie uma conta no seu próprio banco local.
+
+Para desenvolver, crie uma branch própria a partir da `main` atualizada e envie somente sua alteração:
+
+```powershell
+git switch main
+git pull --ff-only origin main
+git switch -c feature/nome-da-alteracao
+# Edite, teste e confira os arquivos antes de adicioná-los.
+.\mvnw.cmd clean test
+.\mvnw.cmd clean verify
+git diff --check
+git status
+git add caminho-do-arquivo-alterado
+git commit -m "Descrever a alteracao realizada"
+git push -u origin feature/nome-da-alteracao
+```
+
+Abra um Pull Request da sua branch para `main` e aguarde revisão. Evite trabalhar ou enviar commits diretamente para `main`. Antes de trocar de branch, preserve alterações locais pendentes. Cada computador mantém seu próprio banco; não envie bancos, backups, senhas de demonstração, logs ou `target` para o Git nem os compartilhe como parte do código.
