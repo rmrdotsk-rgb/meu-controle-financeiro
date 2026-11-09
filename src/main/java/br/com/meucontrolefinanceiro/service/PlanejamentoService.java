@@ -16,8 +16,11 @@ import java.util.stream.Collectors;
 public class PlanejamentoService {
     private final OrcamentoRepository repositorio;
     private final DespesaService despesas;
-    public PlanejamentoService(OrcamentoRepository repositorio, DespesaService despesas) {
-        this.repositorio = repositorio; this.despesas = despesas;
+    private final UsuarioAtual usuarioAtual;
+    public PlanejamentoService(OrcamentoRepository repositorio, DespesaService despesas, UsuarioAtual usuarioAtual) {
+        this.repositorio = repositorio;
+        this.despesas = despesas;
+        this.usuarioAtual = usuarioAtual;
     }
 
     @Transactional(readOnly = true)
@@ -25,7 +28,7 @@ public class PlanejamentoService {
         Map<String, BigDecimal> gastos = despesas.consultarPeriodo(mes.atDay(1), mes.atEndOfMonth())
                 .stream().collect(Collectors.groupingBy(Despesa::getCategoria,
                 Collectors.reducing(BigDecimal.ZERO, Despesa::getValor, BigDecimal::add)));
-        return repositorio.findByMesOrderByCategoriaAsc(mes.toString()).stream().map(item -> {
+        return repositorio.findByUsuario_IdAndMesOrderByCategoriaAsc(usuarioAtual.id(), mes.toString()).stream().map(item -> {
             BigDecimal gasto = gastos.getOrDefault(item.getCategoria(), BigDecimal.ZERO);
             BigDecimal resto = item.getLimite().subtract(gasto);
             int porcentagem = CalculosFinanceiros.percentualLimitado(gasto, item.getLimite());
@@ -40,19 +43,22 @@ public class PlanejamentoService {
     @Transactional
     public void salvar(OrcamentoCategoria dados) {
         PeriodoMensal.interpretar(dados.getMes());
-        OrcamentoCategoria orcamento = repositorio.findByMesAndCategoria(dados.getMes(), dados.getCategoria())
+        var usuario = usuarioAtual.obter();
+        OrcamentoCategoria orcamento = repositorio.findByUsuario_IdAndMesAndCategoria(usuario.getId(), dados.getMes(), dados.getCategoria())
                 .orElseGet(OrcamentoCategoria::new);
         orcamento.setMes(dados.getMes());
         orcamento.setCategoria(dados.getCategoria());
         orcamento.setLimite(dados.getLimite());
+        orcamento.setUsuario(usuario);
         repositorio.save(orcamento);
     }
 
     @Transactional
-    public void excluir(Long id) {
-        OrcamentoCategoria orcamento = repositorio.findById(id)
+    public String excluir(Long id) {
+        OrcamentoCategoria orcamento = repositorio.findByIdAndUsuario_Id(id, usuarioAtual.id())
                 .orElseThrow(() -> new OrcamentoNaoEncontradoException());
         repositorio.delete(orcamento);
+        return orcamento.getMes();
     }
 
     public record ResumoOrcamento(OrcamentoCategoria orcamento, BigDecimal gasto,

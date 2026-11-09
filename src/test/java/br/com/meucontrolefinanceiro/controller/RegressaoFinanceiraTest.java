@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -28,8 +27,7 @@ import static org.hamcrest.Matchers.containsString;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-class RegressaoFinanceiraTest {
-    @Autowired MockMvc mvc;
+class RegressaoFinanceiraTest extends br.com.meucontrolefinanceiro.TesteFinanceiroAutenticado {
     @Autowired DespesaRepository despesas;
     @Autowired ReceitaRepository receitas;
     @Autowired MetaFinanceiraRepository metas;
@@ -45,10 +43,10 @@ class RegressaoFinanceiraTest {
     }
 
     @Test void receitaFiltraPorPeriodoCategoriaDescricaoESomaSomenteResultados() throws Exception {
-        receitas.save(new Receita("Freelance web", new BigDecimal("125.50"), "Freelance", LocalDate.of(2026,11,1)));
-        receitas.save(new Receita("Freelance design", new BigDecimal("80.25"), "Freelance", LocalDate.of(2026,11,30)));
-        receitas.save(new Receita("Freelance anterior", new BigDecimal("999.00"), "Freelance", LocalDate.of(2026,10,31)));
-        receitas.save(new Receita("Salário", new BigDecimal("1500.00"), "Salário", LocalDate.of(2026,11,9)));
+        salvar(new Receita("Freelance web", new BigDecimal("125.50"), "Freelance", LocalDate.of(2026,11,1)));
+        salvar(new Receita("Freelance design", new BigDecimal("80.25"), "Freelance", LocalDate.of(2026,11,30)));
+        salvar(new Receita("Freelance anterior", new BigDecimal("999.00"), "Freelance", LocalDate.of(2026,10,31)));
+        salvar(new Receita("Salário", new BigDecimal("1500.00"), "Salário", LocalDate.of(2026,11,9)));
         mvc.perform(get("/receitas").param("inicio", "2026-11-01").param("fim", "2026-11-30")
                 .param("categoria", "Freelance").param("busca", "  FREELANCE  "))
                 .andExpect(status().isOk()).andExpect(model().attribute("quantidade", 2))
@@ -62,10 +60,10 @@ class RegressaoFinanceiraTest {
     @ParameterizedTest
     @ValueSource(strings = {"/despesas", "/receitas"})
     void buscaTrataCuringasSqlComoTextoLiteral(String rota) throws Exception {
-        despesas.save(new Despesa("Desconto 10%_oferta", new BigDecimal("10.00"), "Outros", LocalDate.of(2026,11,9)));
-        despesas.save(new Despesa("Desconto 100 oferta", new BigDecimal("20.00"), "Outros", LocalDate.of(2026,11,9)));
-        receitas.save(new Receita("Comissão 10%_oferta", new BigDecimal("10.00"), "Outros", LocalDate.of(2026,11,9)));
-        receitas.save(new Receita("Comissão 100 oferta", new BigDecimal("20.00"), "Outros", LocalDate.of(2026,11,9)));
+        salvar(new Despesa("Desconto 10%_oferta", new BigDecimal("10.00"), "Outros", LocalDate.of(2026,11,9)));
+        salvar(new Despesa("Desconto 100 oferta", new BigDecimal("20.00"), "Outros", LocalDate.of(2026,11,9)));
+        salvar(new Receita("Comissão 10%_oferta", new BigDecimal("10.00"), "Outros", LocalDate.of(2026,11,9)));
+        salvar(new Receita("Comissão 100 oferta", new BigDecimal("20.00"), "Outros", LocalDate.of(2026,11,9)));
         mvc.perform(get(rota).param("busca", "%_"))
                 .andExpect(status().isOk()).andExpect(model().attribute("quantidade", 1))
                 .andExpect(model().attribute("total", new BigDecimal("10.00")));
@@ -89,7 +87,7 @@ class RegressaoFinanceiraTest {
                     .param("valor", "20.00").param("categoria", "Outros").param("data", "2026-11-09"))
                     .andExpect(status().is3xxRedirection()).andExpect(flash().attributeExists("erro"));
         }
-        Receita original = receitas.save(new Receita("Receita original", new BigDecimal("20.00"), "Outros", LocalDate.of(2026,11,9)));
+        Receita original = salvar(new Receita("Receita original", new BigDecimal("20.00"), "Outros", LocalDate.of(2026,11,9)));
         mvc.perform(post("/receitas/{id}/editar", original.getId()).param("descricao", "Receita inválida")
                 .param("valor", "-2").param("categoria", "Outros").param("data", "2026-11-09"))
                 .andExpect(status().isOk()).andExpect(model().attributeHasFieldErrors("receita", "valor"));
@@ -146,8 +144,8 @@ class RegressaoFinanceiraTest {
     }
 
     @Test void planejamentoReconheceLimiteExatoEIsolaMeses() throws Exception {
-        despesas.save(new Despesa("Gasto novembro", new BigDecimal("100.00"), "Casa", LocalDate.of(2026,11,9)));
-        despesas.save(new Despesa("Gasto outubro", new BigDecimal("500.00"), "Casa", LocalDate.of(2026,10,9)));
+        salvar(new Despesa("Gasto novembro", new BigDecimal("100.00"), "Casa", LocalDate.of(2026,11,9)));
+        salvar(new Despesa("Gasto outubro", new BigDecimal("500.00"), "Casa", LocalDate.of(2026,10,9)));
         for (String mes : List.of("2026-11", "2026-12")) {
             mvc.perform(post("/orcamentos").param("mes", mes).param("categoria", "Casa").param("limite", "100.00"))
                     .andExpect(status().is3xxRedirection());
@@ -170,8 +168,8 @@ class RegressaoFinanceiraTest {
     }
 
     @Test void painelRefleteEdicaoEExclusaoPersistidas() throws Exception {
-        Receita receita = receitas.save(new Receita("Renda mensal", new BigDecimal("1000.00"), "Outros", LocalDate.of(2026,11,9)));
-        Despesa despesa = despesas.save(new Despesa("Despesa inicial", new BigDecimal("100.00"), "Casa", LocalDate.of(2026,11,9)));
+        Receita receita = salvar(new Receita("Renda mensal", new BigDecimal("1000.00"), "Outros", LocalDate.of(2026,11,9)));
+        Despesa despesa = salvar(new Despesa("Despesa inicial", new BigDecimal("100.00"), "Casa", LocalDate.of(2026,11,9)));
         assertEquals(new BigDecimal("900.00"), painel.gerar(YearMonth.of(2026,11), LocalDate.of(2026,11,9)).saldo());
         mvc.perform(post("/despesas/{id}/editar", despesa.getId()).param("descricao", "Despesa corrigida")
                 .param("valor", "250.00").param("categoria", "Casa").param("data", "2026-11-09"))
@@ -192,5 +190,34 @@ class RegressaoFinanceiraTest {
         assertEquals(0, despesas.count());
         mvc.perform(get("/despesas/nova")).andExpect(status().isOk())
                 .andExpect(content().string(containsString("name=\"_csrf\"")));
+    }
+
+    @Test void aporteInvalidoPreservaValorEDataDigitadosSemGravar() throws Exception {
+        mvc.perform(post("/metas").param("nome", "Reserva de teste").param("valorAlvo", "1000.00")
+                .param("dataLimite", "2027-01-30")).andExpect(status().is3xxRedirection());
+        Long id = metas.findAll().getFirst().getId();
+        var resposta = mvc.perform(post("/metas/{id}/aportes", id).param("valor", "12.345")
+                .param("data", "2026-11-09"))
+                .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/metas"))
+                .andExpect(flash().attribute("aporteMetaId", id))
+                .andExpect(flash().attribute("aporteValor", "12.345"))
+                .andExpect(flash().attribute("aporteData", "2026-11-09")).andReturn();
+        mvc.perform(get("/metas").flashAttrs(resposta.getFlashMap()))
+                .andExpect(status().isOk()).andExpect(content().string(containsString("12.345")))
+                .andExpect(content().string(containsString("2026-11-09")));
+        assertEquals(0, aportes.count());
+    }
+
+    @Test void planejamentoPreservaMesSelecionadoEFormularioInvalido() throws Exception {
+        mvc.perform(post("/orcamentos").param("mes", "2027-03").param("categoria", "Casa").param("limite", "abc"))
+                .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/planejamento?mes=2027-03"))
+                .andExpect(flash().attribute("orcamentoCategoria", "Casa"))
+                .andExpect(flash().attribute("orcamentoLimite", "abc"));
+        mvc.perform(post("/orcamentos").param("mes", "2027-03").param("categoria", "Casa").param("limite", "100.00"))
+                .andExpect(redirectedUrl("/planejamento?mes=2027-03"));
+        Long id = orcamentos.findAll().getFirst().getId();
+        mvc.perform(post("/orcamentos/{id}/excluir", id))
+                .andExpect(redirectedUrl("/planejamento?mes=2027-03"));
+        assertEquals(0, orcamentos.count());
     }
 }

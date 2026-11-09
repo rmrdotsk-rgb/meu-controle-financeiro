@@ -3,8 +3,8 @@
 <header class="topbar" th:fragment="topbar(active)">
     <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
     <div class="topbar-inner">
-        <a class="brand" th:href="@{/dashboard}" aria-label="Meu Controle Financeiro, início"><span class="brand-mark" aria-hidden="true">R$</span> Meu Controle Financeiro</a>
-        <nav class="main-nav" aria-label="Navegação principal">
+        <a class="brand" th:href="${usuarioNome != null} ? @{/dashboard} : @{/login}" aria-label="Meu Controle Financeiro, início"><span class="brand-mark" aria-hidden="true">R$</span> Meu Controle Financeiro</a>
+        <nav class="main-nav" aria-label="Navegação principal" th:if="${usuarioNome != null}">
             <a th:href="@{/dashboard}" th:classappend="${active == 'dashboard'} ? 'active' : ''" th:attr="aria-current=${active == 'dashboard'} ? 'page' : null">Visão geral</a>
             <a th:href="@{/despesas}" th:classappend="${active == 'despesas'} ? 'active' : ''" th:attr="aria-current=${active == 'despesas'} ? 'page' : null">Despesas</a>
             <a th:href="@{/receitas}" th:classappend="${active == 'receitas'} ? 'active' : ''" th:attr="aria-current=${active == 'receitas'} ? 'page' : null">Receitas</a>
@@ -12,7 +12,17 @@
             <a th:href="@{/metas}" th:classappend="${active == 'metas'} ? 'active' : ''" th:attr="aria-current=${active == 'metas'} ? 'page' : null">Metas</a>
             <a th:href="@{/ajuda}" th:classappend="${active == 'ajuda'} ? 'active' : ''" th:attr="aria-current=${active == 'ajuda'} ? 'page' : null">Como usar</a>
         </nav>
+        <div class="account-menu" th:if="${usuarioNome != null}">
+            <span class="pill" th:if="${usuarioDemo == true}">Demonstração</span>
+            <a class="account-link" th:href="@{/conta}" th:attr="aria-current=${active == 'conta'} ? 'page' : null"><span class="sr-only">Minha conta: </span><span th:text="${usuarioNome}"></span></a>
+            <form th:action="@{/logout}" method="post"><button class="action" type="submit">Sair</button></form>
+        </div>
+        <nav class="public-nav" aria-label="Acesso à conta" th:unless="${usuarioNome != null}">
+            <a th:href="@{/login}" th:attr="aria-current=${active == 'login'} ? 'page' : null">Entrar</a>
+            <a th:href="@{/cadastro}" th:attr="aria-current=${active == 'cadastro'} ? 'page' : null">Criar conta</a>
+        </nav>
     </div>
+    <p class="demo-banner" th:if="${usuarioDemo == true}">Conta de demonstração: todos os dados desta conta são fictícios.</p>
 </header>
 <div th:fragment="notice" class="notice-area" aria-live="polite">
     <p class="feedback success" th:if="${sucesso}" role="status" th:text="${sucesso}"></p>

@@ -87,8 +87,9 @@ public class ReceitaController {
     public String atualizar(@PathVariable Long id, @Valid @ModelAttribute("receita") Receita receita,
                             BindingResult erros, Model model, RedirectAttributes redirect) {
         receita.setId(id);
-        if (erros.hasErrors()) { model.addAttribute("modoEdicao", true); return "receita-formulario"; }
         try {
+            service.buscarPorId(id);
+            if (erros.hasErrors()) { model.addAttribute("modoEdicao", true); return "receita-formulario"; }
             service.atualizar(id, receita);
             redirect.addFlashAttribute("sucesso", "Receita atualizada com sucesso");
         } catch (ReceitaService.ReceitaNaoEncontradaException e) {

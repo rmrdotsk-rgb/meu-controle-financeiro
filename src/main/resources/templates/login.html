@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Entrar | Meu Controle Financeiro</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{fragments :: topbar('login')}"></div>
+<main class="auth-page" id="conteudo" tabindex="-1">
+    <p class="eyebrow">Acesso à sua conta</p>
+    <h1>Entrar</h1>
+    <p class="intro">Acesse suas receitas, despesas e objetivos financeiros.</p>
+    <div th:replace="~{fragments :: notice}"></div>
+    <p class="feedback error" role="alert" th:if="${param.error != null}">E-mail ou senha inválidos. Confira os dados e tente novamente.</p>
+    <p class="feedback success" role="status" th:if="${param.logout != null}">Você saiu da sua conta.</p>
+    <section class="panel">
+        <form th:action="@{/login}" method="post" class="auth-form">
+            <div class="field-group">
+                <label for="email">E-mail</label>
+                <input id="email" name="email" type="email" maxlength="254" autocomplete="username" autocapitalize="none" spellcheck="false" th:value="${emailLogin}" required>
+            </div>
+            <div class="field-group">
+                <label for="senha">Senha</label>
+                <input id="senha" name="senha" type="password" autocomplete="current-password" required>
+            </div>
+            <button class="button button-primary auth-submit" type="submit">Entrar</button>
+        </form>
+        <p class="auth-alternative">Ainda não tem conta? <a th:href="@{/cadastro}">Criar minha conta</a></p>
+    </section>
+    <section class="demo-access" th:if="${demoEnabled == true}" aria-label="Acesso de demonstração">
+        <h2>Demonstração disponível</h2>
+        <p>Explore o sistema com dados fictícios em uma conta separada.</p>
+        <a th:href="@{/login(demo=true)}">Usar e-mail de demonstração</a>
+        <p class="small">Use a senha configurada para a demonstração neste computador.</p>
+    </section>
+</main>
+</body>
+</html>

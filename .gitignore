@@ -9,3 +9,6 @@ target/
 .DS_Store
 *.log
 hs_err_pid*
+backups/
+data/*
+!data/.gitkeep

@@ -117,11 +117,12 @@ public class DespesaController {
                             Model model,
                             RedirectAttributes redirectAttributes) {
         despesa.setId(id);
-        if (resultado.hasErrors()) {
-            model.addAttribute("modoEdicao", true);
-            return "formulario";
-        }
         try {
+            service.buscarPorId(id);
+            if (resultado.hasErrors()) {
+                model.addAttribute("modoEdicao", true);
+                return "formulario";
+            }
             service.atualizar(id, despesa);
             redirectAttributes.addFlashAttribute("sucesso", "Despesa atualizada com sucesso");
         } catch (DespesaService.DespesaNaoEncontradaException exception) {
