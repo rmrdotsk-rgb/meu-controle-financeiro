@@ -15,3 +15,15 @@ Disciplina Backend Frameworks — professor Maurício Braga — 2026.2.
 Os requisitos de aplicação adaptável, histórias com leitura/escrita no banco, persistência, CSS organizado e documento impresso com pelo menos quatro histórias constam nas páginas 6 e 7 da apresentação da disciplina. A turma pode formar grupos de até seis integrantes.
 
 Os resultados dos testes e as evidências de execução acompanham a entrega, separados do código-fonte. A existência do código, isoladamente, não comprova uma execução bem-sucedida.
+
+## Evolução com contas individuais
+
+A autenticação é uma ampliação do projeto, sem substituir o CRUD exigido. HU01-HU12 continuam descritas no documento; HU13-HU15 acrescentam cadastro, login/logout e isolamento entre contas. Histórias descrevem ações com critérios de aceite, não personas.
+
+| Funcionalidade acrescentada | Implementação | Como demonstrar |
+|---|---|---|
+| Cadastro de conta | Nome/e-mail validados, unicidade e hash BCrypt | Criar conta; rejeitar e-mail repetido e senha inválida |
+| Autenticação por sessão | Spring Security, CSRF, login e logout | Acesso financeiro exige login; sair encerra sessão |
+| Dados por proprietário | Vínculos e consultas limitadas ao usuário autenticado | Duas sessões; uma conta não consulta nem altera registros da outra |
+| Migração preservando legados | Flyway V1/V2, validação do esquema e quarentena | Abrir cópia antiga e conferir IDs/valores preservados sem atribuição automática |
+| Demonstração opcional | Configuração explícita, conta isolada e restauração protegida | Identificar exemplos fictícios e restaurar somente essa conta |

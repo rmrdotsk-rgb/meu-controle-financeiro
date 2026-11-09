@@ -60,8 +60,9 @@ public class MetaController {
     public String atualizar(@PathVariable Long id, @Valid @ModelAttribute("meta") MetaFinanceira meta,
                             BindingResult erros, Model model, RedirectAttributes redirect) {
         meta.setId(id);
-        if (erros.hasErrors()) { model.addAttribute("modoEdicao", true); return "meta-formulario"; }
         try {
+            service.buscar(id);
+            if (erros.hasErrors()) { model.addAttribute("modoEdicao", true); return "meta-formulario"; }
             service.atualizar(id, meta);
             redirect.addFlashAttribute("sucesso", "Meta atualizada com sucesso");
         } catch (MetaService.MetaNaoEncontradaException e) {
@@ -81,9 +82,18 @@ public class MetaController {
     }
     @PostMapping("/metas/{id}/aportes")
     public String aportar(@PathVariable Long id, @Valid @ModelAttribute("aporte") AporteMeta aporte,
-                          BindingResult erros, RedirectAttributes redirect) {
+                          BindingResult erros, @RequestParam(defaultValue = "") String valor,
+                          @RequestParam(defaultValue = "") String data, RedirectAttributes redirect) {
+        try { service.buscar(id); }
+        catch (MetaService.MetaNaoEncontradaException e) {
+            redirect.addFlashAttribute("erro", "A meta não foi encontrada");
+            return "redirect:/metas";
+        }
         if (erros.hasErrors()) {
             redirect.addFlashAttribute("erro", "Informe um valor positivo, com até duas casas decimais, e uma data válida para o aporte");
+            redirect.addFlashAttribute("aporteMetaId", id);
+            redirect.addFlashAttribute("aporteValor", valor);
+            redirect.addFlashAttribute("aporteData", data);
             return "redirect:/metas";
         }
         try {

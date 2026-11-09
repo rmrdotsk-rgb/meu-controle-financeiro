@@ -194,3 +194,44 @@ progress::-webkit-progress-value { background: #317b66; border-radius: 8px; }
 .budget-exceeded progress::-webkit-progress-value { background: var(--danger); }
 @media (max-width: 800px) { .budget-form { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 620px) { .budget-form { grid-template-columns: 1fr; } }
+
+/* Acesso e identificação da conta. */
+.topbar-inner { flex-wrap: wrap; gap: 12px 20px; }
+.account-menu { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-left: auto; }
+.account-menu form { margin: 0; }
+.account-link { max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .83rem; font-weight: 650; text-underline-offset: 3px; }
+.account-link[aria-current="page"] { text-decoration-thickness: 2px; }
+.public-nav { display: flex; flex-wrap: wrap; gap: 18px; margin-left: auto; }
+.public-nav a { font-size: .88rem; font-weight: 650; text-underline-offset: 3px; }
+.public-nav a[aria-current="page"] { text-decoration-thickness: 2px; }
+.demo-banner { margin: 0; border-top: 1px solid var(--line); padding: 8px 22px; background: var(--green-soft); color: var(--green-dark); font-size: .8rem; text-align: center; }
+.auth-page { width: min(100% - 36px, 480px); margin: 0 auto; padding: 42px 0 68px; }
+.auth-page > .intro { margin-bottom: 24px; }
+.auth-page .panel { padding: 28px; }
+.auth-submit { width: 100%; }
+.auth-alternative { margin: 20px 0 0; padding-top: 18px; border-top: 1px solid var(--line); font-size: .87rem; text-align: center; }
+.auth-alternative a { font-weight: 650; }
+.field-hint { display: block; margin-top: 6px; color: var(--muted); font-size: .8rem; }
+.auth-form .feedback p:last-child, .auth-form .feedback ul:last-child { margin-bottom: 0; }
+.auth-form .feedback ul { padding-left: 20px; }
+.demo-access { border-left: 3px solid #8bad9b; padding: 2px 0 2px 16px; color: var(--muted); font-size: .87rem; }
+.demo-access h2 { margin-bottom: 8px; color: var(--ink); font-size: 1rem; }
+.demo-access p { margin-bottom: 8px; }
+.demo-access p:last-child { margin: 8px 0 0; }
+.account-details { margin: 0 0 20px; }
+.account-details > div { padding: 12px 0; border-bottom: 1px solid var(--line); }
+.account-details dt { color: var(--muted); font-size: .8rem; margin-bottom: 3px; }
+.account-details dd { margin: 0; overflow-wrap: anywhere; font-weight: 650; }
+@media (max-width: 800px) {
+    .account-menu { width: 100%; margin-left: 0; }
+    .account-link { max-width: min(65vw, 340px); }
+    .public-nav { margin-left: 0; }
+}
+@media (max-width: 620px) {
+    .auth-page { padding-top: 28px; }
+    .auth-page .panel { padding: 20px; }
+    .demo-banner { text-align: left; padding: 8px 14px; }
+    .account-menu .pill { font-size: .7rem; }
+    .account-menu .action { min-height: 44px; }
+    .form-page .panel .button { white-space: normal; text-align: center; }
+}

@@ -6,6 +6,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AporteMetaRepository extends JpaRepository<AporteMeta, Long> {
-    List<AporteMeta> findAllByOrderByDataDescIdDesc();
-    Optional<AporteMeta> findByIdAndMeta_Id(Long id, Long metaId);
+    List<AporteMeta> findByMeta_Usuario_IdOrderByDataDescIdDesc(Long usuarioId);
+    Optional<AporteMeta> findByIdAndMeta_IdAndMeta_Usuario_Id(Long id, Long metaId, Long usuarioId);
 }

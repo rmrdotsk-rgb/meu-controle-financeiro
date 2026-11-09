@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Minha conta | Meu Controle Financeiro</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{fragments :: topbar('conta')}"></div>
+<main class="form-page" id="conteudo" tabindex="-1">
+    <p class="eyebrow">Seu acesso</p>
+    <h1>Minha conta</h1>
+    <p class="intro">Informações da conta que está conectada neste navegador.</p>
+    <div th:replace="~{fragments :: notice}"></div>
+    <section class="panel">
+        <h2>Dados da conta</h2>
+        <dl class="account-details">
+            <div><dt>Nome completo</dt><dd th:text="${usuarioNome}"></dd></div>
+            <div><dt>E-mail</dt><dd th:text="${usuarioEmail}"></dd></div>
+            <div><dt>Tipo de conta</dt><dd th:text="${usuarioDemo == true} ? 'Demonstração — dados fictícios' : 'Pessoal'"></dd></div>
+        </dl>
+        <p class="muted small">As consultas e alterações desta sessão usam apenas os registros da sua conta.</p>
+        <form th:action="@{/logout}" method="post"><button class="button button-secondary" type="submit">Sair da conta</button></form>
+    </section>
+    <section class="panel" th:if="${usuarioDemo == true}">
+        <h2>Restaurar a demonstração</h2>
+        <p>Substitua os registros desta conta pelos exemplos iniciais. As alterações feitas na demonstração serão removidas.</p>
+        <p class="muted small">As outras contas e seus registros permanecem preservados.</p>
+        <form th:action="@{/demonstracao/restaurar}" method="post" onsubmit="return confirm('Restaurar os exemplos iniciais? As alterações feitas nesta conta de demonstração serão removidas.')">
+            <button class="button button-secondary" type="submit">Restaurar dados de demonstração</button>
+        </form>
+    </section>
+    <a class="text-link" th:href="@{/dashboard}">Voltar à visão geral</a>
+</main>
+</body>
+</html>

@@ -1,6 +1,9 @@
 package br.com.meucontrolefinanceiro.model;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,6 +25,11 @@ import java.time.LocalDate;
 public class Despesa {
 
     private static final String CATEGORIAS_VALIDAS = "Alimentação|Educação|Transporte|Casa|Saúde|Lazer|Outros";
+
+    // Registros legados sem proprietário permanecem preservados e inacessíveis às contas.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", nullable = true)
+    private Usuario usuario;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -97,4 +105,6 @@ public class Despesa {
     public void setData(LocalDate data) {
         this.data = data;
     }
+    public Usuario getUsuario() { return usuario; }
+    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
 }

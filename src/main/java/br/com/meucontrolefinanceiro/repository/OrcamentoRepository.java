@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface OrcamentoRepository extends JpaRepository<OrcamentoCategoria, Long> {
-    List<OrcamentoCategoria> findByMesOrderByCategoriaAsc(String mes);
-    Optional<OrcamentoCategoria> findByMesAndCategoria(String mes, String categoria);
+    List<OrcamentoCategoria> findByUsuario_IdAndMesOrderByCategoriaAsc(Long usuarioId, String mes);
+    Optional<OrcamentoCategoria> findByUsuario_IdAndMesAndCategoria(Long usuarioId, String mes, String categoria);
+    Optional<OrcamentoCategoria> findByIdAndUsuario_Id(Long id, Long usuarioId);
 }

@@ -9,6 +9,11 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "receitas")
 public class Receita {
+    // Registros legados sem proprietário permanecem preservados e inacessíveis às contas.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", nullable = true)
+    private Usuario usuario;
+
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -47,4 +52,6 @@ public class Receita {
     public void setCategoria(String categoria) { this.categoria = categoria; }
     public LocalDate getData() { return data; }
     public void setData(LocalDate data) { this.data = data; }
+    public Usuario getUsuario() { return usuario; }
+    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
 }

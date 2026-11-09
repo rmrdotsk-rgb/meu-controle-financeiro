@@ -10,7 +10,6 @@ import java.math.BigDecimal;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,28 +18,36 @@ import java.util.stream.Collectors;
 public class MetaService {
     private final MetaFinanceiraRepository metas;
     private final AporteMetaRepository aportes;
-    public MetaService(MetaFinanceiraRepository metas, AporteMetaRepository aportes) {
-        this.metas = metas; this.aportes = aportes;
+    private final UsuarioAtual usuarioAtual;
+    public MetaService(MetaFinanceiraRepository metas, AporteMetaRepository aportes, UsuarioAtual usuarioAtual) {
+        this.metas = metas;
+        this.aportes = aportes;
+        this.usuarioAtual = usuarioAtual;
     }
 
     @Transactional(readOnly = true)
     public MetaFinanceira buscar(Long id) {
-        return metas.findById(id).orElseThrow(() -> new MetaNaoEncontradaException());
+        return metas.findByIdAndUsuario_Id(id, usuarioAtual.id()).orElseThrow(() -> new MetaNaoEncontradaException());
     }
 
     @Transactional(readOnly = true)
     public List<ResumoMeta> listar() {
-        Map<Long, List<AporteMeta>> grupos = aportes.findAllByOrderByDataDescIdDesc().stream()
+        Long usuarioId = usuarioAtual.id();
+        Map<Long, List<AporteMeta>> grupos = aportes.findByMeta_Usuario_IdOrderByDataDescIdDesc(usuarioId).stream()
                 .collect(Collectors.groupingBy(a -> a.getMeta().getId()));
         List<ResumoMeta> resultado = new ArrayList<>();
-        for (MetaFinanceira meta : metas.findAllByOrderByDataLimiteAscIdAsc()) {
+        for (MetaFinanceira meta : metas.findByUsuario_IdOrderByDataLimiteAscIdAsc(usuarioId)) {
             resultado.add(resumir(meta, grupos.getOrDefault(meta.getId(), List.of())));
         }
         return resultado;
     }
 
     @Transactional
-    public void salvar(MetaFinanceira meta) { meta.setId(null); metas.save(meta); }
+    public void salvar(MetaFinanceira meta) {
+        meta.setId(null);
+        meta.setUsuario(usuarioAtual.obter());
+        metas.save(meta);
+    }
     @Transactional
     public void atualizar(Long id, MetaFinanceira dados) {
         MetaFinanceira meta = buscar(id);
@@ -64,7 +71,7 @@ public class MetaService {
     @Transactional
     public void excluirAporte(Long metaId, Long aporteId) {
         buscar(metaId);
-        AporteMeta aporte = aportes.findByIdAndMeta_Id(aporteId, metaId)
+        AporteMeta aporte = aportes.findByIdAndMeta_IdAndMeta_Usuario_Id(aporteId, metaId, usuarioAtual.id())
                 .orElseThrow(() -> new MetaNaoEncontradaException());
         aportes.delete(aporte);
     }

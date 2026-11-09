@@ -18,20 +18,24 @@ import java.util.List;
 public class DespesaService {
 
     private final DespesaRepository repository;
+    private final UsuarioAtual usuarioAtual;
 
-    public DespesaService(DespesaRepository repository) {
+    public DespesaService(DespesaRepository repository, UsuarioAtual usuarioAtual) {
         this.repository = repository;
+        this.usuarioAtual = usuarioAtual;
     }
 
     @Transactional(readOnly = true)
     public List<Despesa> listarTodas() {
-        return repository.findAllByOrderByDataDescIdDesc();
+        return repository.findByUsuario_IdOrderByDataDescIdDesc(usuarioAtual.id());
     }
 
     @Transactional(readOnly = true)
     public List<Despesa> filtrar(LocalDate inicio, LocalDate fim, String categoria, String busca) {
+        Long usuarioId = usuarioAtual.id();
         Specification<Despesa> filtros = (raiz, query, cb) -> {
             List<Predicate> condicoes = new ArrayList<>();
+            condicoes.add(cb.equal(raiz.get("usuario").get("id"), usuarioId));
             if (inicio != null) condicoes.add(cb.greaterThanOrEqualTo(raiz.get("data"), inicio));
             if (fim != null) condicoes.add(cb.lessThanOrEqualTo(raiz.get("data"), fim));
             if (categoria != null && !categoria.isBlank()) condicoes.add(cb.equal(raiz.get("categoria"), categoria));
@@ -47,16 +51,18 @@ public class DespesaService {
 
     @Transactional(readOnly = true)
     public List<Despesa> consultarPeriodo(LocalDate inicio, LocalDate fim) {
-        return repository.findByDataBetween(inicio, fim);
+        return repository.findByUsuario_IdAndDataBetween(usuarioAtual.id(), inicio, fim);
     }
 
     @Transactional(readOnly = true)
     public Despesa buscarPorId(Long id) {
-        return repository.findById(id).orElseThrow(() -> new DespesaNaoEncontradaException(id));
+        return repository.findByIdAndUsuario_Id(id, usuarioAtual.id()).orElseThrow(() -> new DespesaNaoEncontradaException(id));
     }
 
     @Transactional
     public Despesa salvar(Despesa despesa) {
+        despesa.setId(null);
+        despesa.setUsuario(usuarioAtual.obter());
         return repository.save(despesa);
     }
 

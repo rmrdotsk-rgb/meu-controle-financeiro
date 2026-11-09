@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 
@@ -28,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-class DespesaServiceTest {
+class DespesaServiceTest extends br.com.meucontrolefinanceiro.TesteFinanceiroAutenticado {
 
     @Autowired
     private DespesaService service;
@@ -36,8 +35,6 @@ class DespesaServiceTest {
     @Autowired
     private DespesaRepository repository;
 
-    @Autowired
-    private MockMvc mockMvc;
 
     @Autowired
     private Validator validator;

@@ -5,8 +5,13 @@ import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "orcamentos", uniqueConstraints = @UniqueConstraint(name = "uk_orcamento_mes_categoria", columnNames = {"mes", "categoria"}))
+@Table(name = "orcamentos", uniqueConstraints = @UniqueConstraint(name = "uk_orcamento_usuario_mes_categoria", columnNames = {"usuario_id", "mes", "categoria"}))
 public class OrcamentoCategoria {
+    // Registros legados sem proprietário permanecem preservados e inacessíveis às contas.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", nullable = true)
+    private Usuario usuario;
+
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -34,4 +39,6 @@ public class OrcamentoCategoria {
     public void setCategoria(String categoria) { this.categoria = categoria; }
     public BigDecimal getLimite() { return limite; }
     public void setLimite(BigDecimal limite) { this.limite = limite; }
+    public Usuario getUsuario() { return usuario; }
+    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
 }

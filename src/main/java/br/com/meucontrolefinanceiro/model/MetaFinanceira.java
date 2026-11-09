@@ -11,6 +11,11 @@ import java.util.List;
 @Entity
 @Table(name = "metas_financeiras")
 public class MetaFinanceira {
+    // Registros legados sem proprietário permanecem preservados e inacessíveis às contas.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", nullable = true)
+    private Usuario usuario;
+
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -43,4 +48,6 @@ public class MetaFinanceira {
     public LocalDate getDataLimite() { return dataLimite; }
     public void setDataLimite(LocalDate dataLimite) { this.dataLimite = dataLimite; }
     public List<AporteMeta> getAportes() { return aportes; }
+    public Usuario getUsuario() { return usuario; }
+    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
 }

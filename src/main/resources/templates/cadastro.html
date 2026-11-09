@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Criar conta | Meu Controle Financeiro</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{fragments :: topbar('cadastro')}"></div>
+<main class="auth-page" id="conteudo" tabindex="-1">
+    <p class="eyebrow">Cadastro</p>
+    <h1>Criar minha conta</h1>
+    <p class="intro">Comece com seus próprios registros. Você poderá adicionar receitas e despesas após entrar.</p>
+    <div th:replace="~{fragments :: notice}"></div>
+    <section class="panel">
+        <form th:action="@{/cadastro}" method="post" th:object="${cadastro}" class="auth-form">
+            <div class="feedback error" role="alert" th:if="${#fields.hasErrors('*')}">
+                <p>Confira os campos abaixo. Digite as senhas novamente para continuar.</p>
+                <ul th:if="${#fields.hasGlobalErrors()}"><li th:each="err : ${#fields.globalErrors()}" th:text="${err}"></li></ul>
+            </div>
+            <div class="field-group">
+                <label for="nome">Nome completo</label>
+                <input id="nome" type="text" th:field="*{nome}" minlength="3" maxlength="80" autocomplete="name" required th:attr="aria-invalid=${#fields.hasErrors('nome')},aria-describedby=${#fields.hasErrors('nome')} ? 'nome-erro' : null">
+                <small id="nome-erro" class="field-error" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></small>
+            </div>
+            <div class="field-group">
+                <label for="email">E-mail</label>
+                <input id="email" type="email" th:field="*{email}" maxlength="254" autocomplete="email" autocapitalize="none" spellcheck="false" required th:attr="aria-invalid=${#fields.hasErrors('email')},aria-describedby=${#fields.hasErrors('email')} ? 'email-erro' : null">
+                <small id="email-erro" class="field-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
+            </div>
+            <div class="field-group">
+                <label for="senha">Senha</label>
+                <input id="senha" name="senha" type="password" minlength="8" maxlength="72" autocomplete="new-password" required th:attr="aria-invalid=${#fields.hasErrors('senha')},aria-describedby=${#fields.hasErrors('senha')} ? 'senha-ajuda senha-erro' : 'senha-ajuda'">
+                <small class="field-hint" id="senha-ajuda">Use de 8 a 72 caracteres. Acentos e símbolos podem reduzir o limite máximo.</small>
+                <small id="senha-erro" class="field-error" th:if="${#fields.hasErrors('senha')}" th:errors="*{senha}"></small>
+            </div>
+            <div class="field-group">
+                <label for="confirmacaoSenha">Confirmar senha</label>
+                <input id="confirmacaoSenha" name="confirmacaoSenha" type="password" minlength="8" maxlength="72" autocomplete="new-password" required th:attr="aria-invalid=${#fields.hasErrors('confirmacaoSenha')},aria-describedby=${#fields.hasErrors('confirmacaoSenha')} ? 'confirmacaoSenha-erro' : null">
+                <small id="confirmacaoSenha-erro" class="field-error" th:if="${#fields.hasErrors('confirmacaoSenha')}" th:errors="*{confirmacaoSenha}"></small>
+            </div>
+            <button class="button button-primary auth-submit" type="submit">Criar conta</button>
+        </form>
+        <p class="auth-alternative">Já tem conta? <a th:href="@{/login}">Entrar</a></p>
+    </section>
+</main>
+</body>
+</html>

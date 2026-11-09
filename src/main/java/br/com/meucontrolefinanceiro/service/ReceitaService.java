@@ -16,15 +16,21 @@ import java.util.List;
 @Service
 public class ReceitaService {
     private final ReceitaRepository repository;
-    public ReceitaService(ReceitaRepository repository) { this.repository = repository; }
+    private final UsuarioAtual usuarioAtual;
+    public ReceitaService(ReceitaRepository repository, UsuarioAtual usuarioAtual) {
+        this.repository = repository;
+        this.usuarioAtual = usuarioAtual;
+    }
 
     @Transactional(readOnly = true)
-    public List<Receita> listarTodas() { return repository.findAllByOrderByDataDescIdDesc(); }
+    public List<Receita> listarTodas() { return repository.findByUsuario_IdOrderByDataDescIdDesc(usuarioAtual.id()); }
 
     @Transactional(readOnly = true)
     public List<Receita> filtrar(LocalDate inicio, LocalDate fim, String categoria, String busca) {
+        Long usuarioId = usuarioAtual.id();
         Specification<Receita> filtros = (raiz, query, cb) -> {
             List<Predicate> condicoes = new ArrayList<>();
+            condicoes.add(cb.equal(raiz.get("usuario").get("id"), usuarioId));
             if (inicio != null) condicoes.add(cb.greaterThanOrEqualTo(raiz.get("data"), inicio));
             if (fim != null) condicoes.add(cb.lessThanOrEqualTo(raiz.get("data"), fim));
             if (categoria != null && !categoria.isBlank()) condicoes.add(cb.equal(raiz.get("categoria"), categoria));
@@ -39,14 +45,18 @@ public class ReceitaService {
     }
     @Transactional(readOnly = true)
     public List<Receita> consultarPeriodo(LocalDate inicio, LocalDate fim) {
-        return repository.findByDataBetween(inicio, fim);
+        return repository.findByUsuario_IdAndDataBetween(usuarioAtual.id(), inicio, fim);
     }
     @Transactional(readOnly = true)
     public Receita buscarPorId(Long id) {
-        return repository.findById(id).orElseThrow(() -> new ReceitaNaoEncontradaException());
+        return repository.findByIdAndUsuario_Id(id, usuarioAtual.id()).orElseThrow(() -> new ReceitaNaoEncontradaException());
     }
     @Transactional
-    public Receita salvar(Receita dados) { dados.setId(null); return repository.save(dados); }
+    public Receita salvar(Receita dados) {
+        dados.setId(null);
+        dados.setUsuario(usuarioAtual.obter());
+        return repository.save(dados);
+    }
     @Transactional
     public void atualizar(Long id, Receita dados) {
         Receita atual = buscarPorId(id);

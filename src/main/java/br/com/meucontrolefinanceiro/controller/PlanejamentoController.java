@@ -36,10 +36,12 @@ public class PlanejamentoController {
 
     @PostMapping("/orcamentos")
     public String salvar(@Valid @ModelAttribute("orcamento") OrcamentoCategoria orcamento, BindingResult erros,
-                         RedirectAttributes redirect) {
+                         @RequestParam(defaultValue = "") String limite, RedirectAttributes redirect) {
         if (erros.hasErrors()) {
             redirect.addFlashAttribute("erro", "Confira mês, categoria e limite. Use um valor positivo com duas casas decimais.");
-            return "redirect:/planejamento";
+            redirect.addFlashAttribute("orcamentoCategoria", orcamento.getCategoria());
+            redirect.addFlashAttribute("orcamentoLimite", limite);
+            return voltarAoMes(orcamento.getMes());
         }
         try {
             service.salvar(orcamento);
@@ -51,13 +53,18 @@ public class PlanejamentoController {
         }
     }
     @PostMapping("/orcamentos/{id}/excluir")
-    public String excluir(@PathVariable Long id, RedirectAttributes redirect) {
+    public String excluir(@PathVariable Long id, @RequestParam(defaultValue = "") String mes, RedirectAttributes redirect) {
         try {
-            service.excluir(id);
+            mes = service.excluir(id);
             redirect.addFlashAttribute("sucesso", "Limite removido");
         } catch (PlanejamentoService.OrcamentoNaoEncontradoException e) {
             redirect.addFlashAttribute("erro", "O limite não foi encontrado");
         }
-        return "redirect:/planejamento";
+        return voltarAoMes(mes);
+    }
+
+    private String voltarAoMes(String mes) {
+        try { return "redirect:/planejamento?mes=" + PeriodoMensal.interpretar(mes); }
+        catch (DateTimeParseException e) { return "redirect:/planejamento"; }
     }
 }

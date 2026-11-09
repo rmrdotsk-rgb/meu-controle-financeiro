@@ -12,8 +12,8 @@
         <p class="muted small">Se a categoria já tiver um limite neste mês, o novo valor substitui o anterior.</p>
         <form method="post" th:action="@{/orcamentos}" class="filters budget-form">
             <div class="field-group"><label for="mes">Mês</label><input id="mes" type="month" name="mes" th:value="${periodo}" required></div>
-            <div class="field-group"><label for="categoria">Categoria</label><select id="categoria" name="categoria" required><option value="">Escolha</option><option value="Alimentação">Alimentação</option><option value="Educação">Educação</option><option value="Transporte">Transporte</option><option value="Casa">Casa</option><option value="Saúde">Saúde</option><option value="Lazer">Lazer</option><option value="Outros">Outros</option></select></div>
-            <div class="field-group"><label for="limite">Limite (R$)</label><input id="limite" type="number" name="limite" min="0.01" max="9999999999.99" inputmode="decimal" step="0.01" placeholder="0,00" required></div>
+            <div class="field-group"><label for="categoria">Categoria</label><select id="categoria" name="categoria" required><option value="">Escolha</option><option value="Alimentação" th:selected="${orcamentoCategoria == 'Alimentação'}">Alimentação</option><option value="Educação" th:selected="${orcamentoCategoria == 'Educação'}">Educação</option><option value="Transporte" th:selected="${orcamentoCategoria == 'Transporte'}">Transporte</option><option value="Casa" th:selected="${orcamentoCategoria == 'Casa'}">Casa</option><option value="Saúde" th:selected="${orcamentoCategoria == 'Saúde'}">Saúde</option><option value="Lazer" th:selected="${orcamentoCategoria == 'Lazer'}">Lazer</option><option value="Outros" th:selected="${orcamentoCategoria == 'Outros'}">Outros</option></select></div>
+            <div class="field-group"><label for="limite">Limite (R$)</label><input id="limite" type="number" name="limite" th:value="${orcamentoLimite}" min="0.01" max="9999999999.99" inputmode="decimal" step="0.01" placeholder="0,00" required></div>
             <button class="button button-primary" type="submit">Salvar limite</button>
         </form>
     </section>
@@ -22,7 +22,7 @@
         <div class="budget-list" th:unless="${#lists.isEmpty(orcamentos)}">
             <div class="budget-item" th:each="item : ${orcamentos}" th:classappend="${item.gasto.compareTo(item.orcamento.limite) > 0} ? 'budget-exceeded' : ''">
                 <div class="section-heading"><div><h3 th:text="${item.orcamento.categoria}"></h3><span class="pill" th:text="${item.situacao}"></span></div>
-                    <form method="post" th:action="@{/orcamentos/{id}/excluir(id=${item.orcamento.id})}" onsubmit="return confirm('Remover este limite mensal?')"><button class="action action-delete" type="submit">Remover</button></form></div>
+                    <form method="post" th:action="@{/orcamentos/{id}/excluir(id=${item.orcamento.id})}" onsubmit="return confirm('Remover este limite mensal?')"><input type="hidden" name="mes" th:value="${periodo}"><button class="action action-delete" type="submit">Remover</button></form></div>
                 <div class="bar-label"><strong th:text="${'Gasto: R$ ' + #numbers.formatDecimal(item.gasto, 1, 'POINT', 2, 'COMMA')}"></strong><span th:text="${'Limite: R$ ' + #numbers.formatDecimal(item.orcamento.limite, 1, 'POINT', 2, 'COMMA')}"></span></div>
                 <progress th:value="${item.percentual}" max="100" th:attr="aria-label=${'Uso do limite de ' + item.orcamento.categoria}"></progress>
                 <p class="muted small" th:text="${'Disponível dentro do limite: R$ ' + #numbers.formatDecimal(item.restante, 1, 'POINT', 2, 'COMMA')}"></p>
