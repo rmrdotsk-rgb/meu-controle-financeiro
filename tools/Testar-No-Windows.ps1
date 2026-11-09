@@ -31,12 +31,12 @@ function Confirmar-Texto([string]$Html, [string]$Texto) {
     if (-not $Html.Contains($Texto)) { throw "Resultado esperado não encontrado: $Texto" }
 }
 function Iniciar-Instancia([string]$NomeLog) {
-    $argumentosJava = @('-jar', ('"' + $arquivoJar + '"'), ('"--server.port=' + $porta + '"'), '--server.address=127.0.0.1', ('"--spring.datasource.url=jdbc:h2:file:' + $bancoTeste + ';WRITE_DELAY=0"'))
+    $argumentosJava = @('-jar', ('"' + $arquivoJar + '"'), ('"--server.port=' + $porta + '"'), '--server.address=127.0.0.1', '--app.demo.enabled=false', ('"--spring.datasource.url=jdbc:h2:file:' + $bancoTeste + ';WRITE_DELAY=0"'))
     $script:servidor = Start-Process -FilePath $java -ArgumentList $argumentosJava -WorkingDirectory $raizProjeto -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $diretorioTeste ($NomeLog + '-saida.log')) -RedirectStandardError (Join-Path $diretorioTeste ($NomeLog + '-erros.log'))
     $limiteEspera = [DateTime]::UtcNow.AddSeconds(55)
     do {
         if ($script:servidor.HasExited) { throw "Servidor encerrou durante a inicialização. Consulte os logs em $diretorioTeste" }
-        try { $null = Consultar-Pagina '/dashboard'; return }
+        try { $null = Consultar-Pagina '/login'; return }
         catch { if ([DateTime]::UtcNow -ge $limiteEspera) { throw 'Servidor não respondeu em 55 segundos.' } }
         Start-Sleep -Milliseconds 350
     } while ($true)
@@ -60,8 +60,8 @@ try {
     finally { $ErrorActionPreference = $preferenciaAnterior }
     Write-Host '[2/8] Executando clean test...'
     Executar-Maven @('-B', '-ntp', 'clean', 'test') 'maven-test.log'
-    Write-Host '[3/8] Executando clean package (inclui os testes novamente)...'
-    Executar-Maven @('-B', '-ntp', 'clean', 'package') 'maven-package.log'
+    Write-Host '[3/8] Executando clean verify (inclui os testes novamente)...'
+    Executar-Maven @('-B', '-ntp', 'clean', 'verify') 'maven-verify.log'
     $arquivoJar = Join-Path $raizProjeto 'target\meu-controle-financeiro-0.0.1-SNAPSHOT.jar'
     if (-not (Test-Path -LiteralPath $arquivoJar)) { throw 'JAR não foi gerado.' }
     $bancoTeste = (Join-Path $diretorioTeste 'banco-isolado').Replace('\', '/')
@@ -72,6 +72,12 @@ try {
     $urlBase = 'http://127.0.0.1:' + $porta
     Write-Host '[4/8] Iniciando aplicação com H2 isolado...'
     Iniciar-Instancia 'primeiro-servidor'
+    $emailTeste = 'teste-' + [guid]::NewGuid().ToString('N') + '@example.test'
+    $senhaTeste = [guid]::NewGuid().ToString('N') + 'aA9!'
+    $html = Enviar-Formulario '/cadastro' '/cadastro' @{ nome='Conta de teste isolada'; email=$emailTeste; senha=$senhaTeste; confirmacaoSenha=$senhaTeste }
+    Confirmar-Texto $html 'Conta criada'
+    $html = Enviar-Formulario '/login' '/login' @{ email=$emailTeste; senha=$senhaTeste }
+    Confirmar-Texto $html 'Visão geral'
     foreach ($rota in @('/dashboard', '/despesas', '/receitas', '/metas', '/planejamento', '/ajuda')) { $null = Consultar-Pagina $rota }
     Write-Host '[5/8] Cadastrando, consultando e editando uma despesa com CSRF real...'
     $html = Enviar-Formulario '/despesas/nova' '/despesas' @{ descricao='Despesa isolada de teste'; valor='123.45'; categoria='Casa'; data='2026-11-09' }
@@ -92,6 +98,7 @@ try {
     Encerrar-Instancia
     $script:sessaoHttp = New-Object Microsoft.PowerShell.Commands.WebRequestSession
     Iniciar-Instancia 'segundo-servidor'
+    $null = Enviar-Formulario '/login' '/login' @{ email=$emailTeste; senha=$senhaTeste }
     $html = Consultar-Pagina '/despesas'
     Confirmar-Texto $html 'Despesa editada e persistida'
     Confirmar-Texto $html '222,22'
@@ -100,7 +107,9 @@ try {
     $html = Enviar-Formulario '/despesas' ("/despesas/$idDespesa/excluir") @{}
     if ($html.Contains('Despesa editada e persistida')) { throw 'A despesa continuou na listagem após a exclusão.' }
     Confirmar-Texto $html 'Ainda não há despesas cadastradas.'
-    @('APROVADO', 'Java 21; clean test; clean package; seis páginas HTTP; CRUD despesas; CSRF 403; persistência H2 após reiniciar; exclusão confirmada.', ('Banco isolado: ' + $bancoTeste), ('Porta de teste: ' + $porta)) | Set-Content -LiteralPath (Join-Path $diretorioTeste 'resultado.txt') -Encoding UTF8
+    $html = Enviar-Formulario '/conta' '/logout' @{}
+    Confirmar-Texto $html 'Você saiu da sua conta'
+    @('APROVADO', 'Java 21; clean test; clean verify; cadastro e login; seis páginas autenticadas; CRUD despesas; CSRF 403; persistência H2 após reiniciar; exclusão e logout confirmados.', ('Banco isolado: ' + $bancoTeste), ('Porta de teste: ' + $porta)) | Set-Content -LiteralPath (Join-Path $diretorioTeste 'resultado.txt') -Encoding UTF8
     Write-Host 'APROVADO: compilação, testes, HTTP, CRUD, CSRF e persistência após reinício.' -ForegroundColor Green
     Write-Host "Evidências preservadas em: $diretorioTeste"
 }
